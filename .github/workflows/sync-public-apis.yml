@@ -1,0 +1,39 @@
+name: Sync public-apis
+
+on:
+  schedule:
+    - cron: "17 3 * * *"   # every day at 03:17 UTC
+  workflow_dispatch:        # allows running it manually from the Actions tab
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-public-apis
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0     # git subtree needs the full history
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Pull latest public-apis
+        run: |
+          before=$(git rev-parse HEAD)
+          git subtree pull --prefix=public-apis \
+            https://github.com/public-apis/public-apis master --squash \
+            -m "Sync public-apis from upstream"
+          if [ "$(git rev-parse HEAD)" != "$before" ]; then
+            git push origin HEAD:${{ github.ref_name }}
+            echo "Pushed new upstream changes."
+          else
+            echo "Already up to date."
+          fi
