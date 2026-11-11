@@ -2,82 +2,234 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>SafeAir Daily</title>
-  <meta name="description" content="Personal heat, air quality, UV, pollen and earthquake safety check for today.">
-  <link rel="stylesheet" href="../../assets/base.css">
+  <meta name="description" content="Your personal daily safety check for heat, air quality, UV, pollen and earthquakes, with an activity planner, 5-day outlook and health diary.">
+  <meta name="theme-color" content="#0f766e">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="wrap">
-    <header class="top">
-      <div>
-        <h1>SafeAir Daily</h1>
-        <p>Is it safe for <em>you</em> to go out today?</p>
-      </div>
-      <a class="home" href="../../index.html">← All apps</a>
+  <div class="app">
+    <header class="appbar">
+      <a class="icon-btn" href="../../index.html" aria-label="All apps">←</a>
+      <div class="brand"><span class="logo" aria-hidden="true">🌤️</span> SafeAir</div>
+      <div class="spacer"></div>
+      <button class="icon-btn" id="theme-btn" type="button" aria-label="Switch theme">🌓</button>
+      <button class="icon-btn" id="settings-btn" type="button" aria-label="Settings">⚙️</button>
     </header>
 
-    <section class="card" aria-labelledby="setup-h">
-      <h2 id="setup-h">Who and where</h2>
-      <div class="row">
-        <div class="grow">
-          <label for="person">Name (optional)</label>
-          <input id="person" type="text" placeholder="e.g. Me, Mum, Dad" autocomplete="off">
-        </div>
-        <div class="grow city-box">
-          <label for="city">City</label>
-          <input id="city" type="search" placeholder="Search a city…" autocomplete="off">
-          <ul id="city-results" class="suggestions" role="listbox" hidden></ul>
-        </div>
-        <button id="locate" class="secondary" type="button">📍 Use my location</button>
-      </div>
+    <div class="people-bar" id="people" role="tablist" aria-label="People and places"></div>
 
-      <fieldset class="profiles">
-        <legend>Health profile (pick any that apply)</legend>
-        <div id="profile-chips" class="chips"></div>
-      </fieldset>
-
-      <details class="limits">
-        <summary>My alert limits</summary>
-        <div class="row">
-          <div class="grow">
-            <label for="limit-aqi">Alert me when air quality (US AQI) is above</label>
-            <input id="limit-aqi" type="number" min="0" max="500" step="5" placeholder="e.g. 100">
-          </div>
-          <div class="grow">
-            <label for="limit-heat">Alert me when it feels hotter than (°C)</label>
-            <input id="limit-heat" type="number" min="-40" max="60" step="1" placeholder="e.g. 38">
+    <main>
+      <!-- HERO -->
+      <section id="hero" class="hero lvl-na loading" aria-live="polite">
+        <div class="hero-ring">
+          <svg viewBox="0 0 120 120" aria-hidden="true">
+            <circle class="track" cx="60" cy="60" r="52"></circle>
+            <circle class="prog" id="ring" cx="60" cy="60" r="52"></circle>
+          </svg>
+          <div class="ring-label"><span id="score">–</span><small>safety</small></div>
+        </div>
+        <div class="hero-body">
+          <div class="verdict"><span id="verdict-emoji" aria-hidden="true">⏳</span> <span id="verdict">Checking…</span></div>
+          <p id="headline" class="headline">Getting the latest conditions.</p>
+          <div class="hero-meta" id="hero-meta"></div>
+          <div class="hero-actions">
+            <button class="pill-btn" id="share-btn" type="button">↗ Share</button>
+            <button class="pill-btn" id="refresh-btn" type="button">↻ Refresh</button>
           </div>
         </div>
-        <p class="small muted">Alerts show on this page, and as browser notifications if you allow them, while the page is open. It refreshes every 30 minutes.</p>
-        <button id="notify" class="secondary" type="button">🔔 Enable browser notifications</button>
-      </details>
+      </section>
 
-      <div class="row actions">
-        <button id="check" type="button" disabled>Check now</button>
-        <button id="save" class="secondary" type="button" disabled>＋ Save to family list</button>
-      </div>
-      <p id="status" class="small muted" role="status" aria-live="polite"></p>
-    </section>
+      <div id="alerts" class="alerts" role="alert" hidden></div>
 
-    <section id="report" class="card" hidden aria-live="polite"></section>
+      <nav class="tabs" role="tablist" aria-label="Sections">
+        <button role="tab" id="t-today" aria-controls="tab-today" aria-selected="true"><span>☀️</span>Today</button>
+        <button role="tab" id="t-plan" aria-controls="tab-plan" aria-selected="false"><span>🗓️</span>Plan</button>
+        <button role="tab" id="t-week" aria-controls="tab-week" aria-selected="false"><span>📅</span>5 days</button>
+        <button role="tab" id="t-diary" aria-controls="tab-diary" aria-selected="false"><span>📔</span>Diary</button>
+        <button role="tab" id="t-family" aria-controls="tab-family" aria-selected="false"><span>👨‍👩‍👧</span>Family</button>
+      </nav>
 
-    <section class="card" aria-labelledby="family-h">
-      <div class="family-head">
-        <h2 id="family-h">Family &amp; places</h2>
-        <button id="refresh-family" class="secondary small-btn" type="button">↻ Refresh all</button>
-      </div>
-      <p id="family-empty" class="muted small">Save people and cities (for example, parents in another city) to check them all at once.</p>
-      <div id="family" class="grid"></div>
-    </section>
+      <!-- TODAY -->
+      <section role="tabpanel" id="tab-today" aria-labelledby="t-today" class="panel">
+        <h2 class="section-title">Right now <span class="hint">Tap a card for details</span></h2>
+        <div id="tiles" class="tiles"></div>
+        <div id="tile-detail" class="tile-detail" hidden></div>
 
-    <footer class="attrib">
-      Weather and air quality by <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a> (CC BY 4.0) ·
-      Earthquakes by <a href="https://earthquake.usgs.gov/" target="_blank" rel="noopener">USGS</a>.
-      This app gives general guidance only and is not medical advice. Always follow official warnings.
-    </footer>
+        <h2 class="section-title">Smart tips</h2>
+        <div id="tips" class="tips"></div>
+
+        <h2 class="section-title">What to do</h2>
+        <ul id="advice" class="advice"></ul>
+      </section>
+
+      <!-- PLAN -->
+      <section role="tabpanel" id="tab-plan" aria-labelledby="t-plan" class="panel" hidden>
+        <h2 class="section-title">What are you planning?</h2>
+        <div id="activities" class="seg wrap" role="radiogroup" aria-label="Activity"></div>
+
+        <div class="card plan-card">
+          <div class="plan-head">
+            <div>
+              <div id="plan-verdict" class="plan-verdict"></div>
+              <div id="plan-best" class="muted"></div>
+            </div>
+            <div id="metrics" class="seg small" role="radiogroup" aria-label="Chart metric"></div>
+          </div>
+          <div class="chart-wrap">
+            <svg id="chart" class="chart" role="img" aria-label="Next 24 hours"></svg>
+          </div>
+          <label for="scrub" class="sr-only">Pick an hour</label>
+          <input id="scrub" class="scrub" type="range" min="0" max="23" value="0">
+          <div id="hour-detail" class="hour-detail"></div>
+        </div>
+      </section>
+
+      <!-- WEEK -->
+      <section role="tabpanel" id="tab-week" aria-labelledby="t-week" class="panel" hidden>
+        <h2 class="section-title">Next 5 days</h2>
+        <div id="week" class="week"></div>
+      </section>
+
+      <!-- DIARY -->
+      <section role="tabpanel" id="tab-diary" aria-labelledby="t-diary" class="panel" hidden>
+        <div class="card">
+          <h2 class="card-title">How do you feel today?</h2>
+          <div id="feelings" class="feelings" role="radiogroup" aria-label="How you feel"></div>
+          <div class="field">
+            <div class="label">Any symptoms?</div>
+            <div id="symptoms" class="chips"></div>
+          </div>
+          <div class="field">
+            <label class="label" for="diary-note">Note (optional)</label>
+            <input id="diary-note" type="text" maxlength="140" placeholder="e.g. Walked to work, felt tight chest">
+          </div>
+          <div class="row">
+            <button id="diary-save" class="btn" type="button">Save today's entry</button>
+            <span id="diary-status" class="muted small"></span>
+          </div>
+        </div>
+
+        <div class="card insight">
+          <h2 class="card-title">💡 Your pattern</h2>
+          <p id="insight"></p>
+          <div id="diary-chart" class="diary-chart"></div>
+        </div>
+
+        <h2 class="section-title">History</h2>
+        <div id="diary-list" class="diary-list"></div>
+      </section>
+
+      <!-- FAMILY -->
+      <section role="tabpanel" id="tab-family" aria-labelledby="t-family" class="panel" hidden>
+        <h2 class="section-title">Everyone you care about <span class="hint">Tap to switch</span></h2>
+        <div id="family" class="family"></div>
+      </section>
+
+      <footer class="foot">
+        Weather &amp; air quality: <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a> (CC BY 4.0) ·
+        Earthquakes: <a href="https://earthquake.usgs.gov/" target="_blank" rel="noopener">USGS</a><br>
+        General guidance only, not medical advice. Always follow official warnings.
+      </footer>
+    </main>
   </div>
+
+  <!-- PERSON EDITOR / ONBOARDING -->
+  <dialog id="person-dlg" class="sheet" aria-labelledby="person-title">
+    <form method="dialog" id="person-form" novalidate>
+      <div class="sheet-head">
+        <h2 id="person-title">Add someone</h2>
+        <button class="icon-btn" value="cancel" formnovalidate aria-label="Close">✕</button>
+      </div>
+      <div class="steps" id="steps" aria-hidden="true"><i></i><i></i></div>
+
+      <div class="step" data-step="1">
+        <p class="welcome" id="welcome">👋 Welcome! Let's set up your daily safety check. It takes 20 seconds.</p>
+        <div class="field">
+          <label class="label" for="p-name">Name</label>
+          <input id="p-name" type="text" placeholder="e.g. Me, Mum, Dad" autocomplete="off" maxlength="30">
+        </div>
+        <div class="field city-box">
+          <label class="label" for="p-city">City</label>
+          <input id="p-city" type="search" placeholder="Search a city…" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="p-city-results">
+          <ul id="p-city-results" class="suggestions" role="listbox" hidden></ul>
+          <button id="p-locate" class="link-btn" type="button">📍 Use my current location</button>
+          <div id="p-city-picked" class="picked muted small"></div>
+        </div>
+      </div>
+
+      <div class="step" data-step="2">
+        <div class="field">
+          <div class="label">Anything we should keep in mind?</div>
+          <div id="p-profiles" class="chips"></div>
+        </div>
+        <details class="field" id="p-limits-box">
+          <summary class="label">🔔 Custom alert limits</summary>
+          <div class="grid2">
+            <div>
+              <label class="small" for="p-aqi">Alert when air quality (AQI) is above</label>
+              <input id="p-aqi" type="number" min="0" max="500" step="5" placeholder="e.g. 100">
+            </div>
+            <div>
+              <label class="small" for="p-heat">Alert when it feels hotter than (<span class="unit">°C</span>)</label>
+              <input id="p-heat" type="number" min="-40" max="140" step="1" placeholder="e.g. 38">
+            </div>
+          </div>
+        </details>
+      </div>
+
+      <p id="person-error" class="error small" role="alert"></p>
+      <div class="sheet-actions">
+        <button id="p-delete" class="btn ghost danger" type="button" hidden>Remove</button>
+        <div class="spacer"></div>
+        <button id="p-back" class="btn ghost" type="button" hidden>Back</button>
+        <button id="p-next" class="btn" type="button">Next</button>
+        <button id="p-save" class="btn" type="button">Save</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- SETTINGS -->
+  <dialog id="settings-dlg" class="sheet" aria-labelledby="settings-title">
+    <form method="dialog">
+      <div class="sheet-head">
+        <h2 id="settings-title">Settings</h2>
+        <button class="icon-btn" value="close" aria-label="Close">✕</button>
+      </div>
+      <div class="field">
+        <div class="label">Temperature</div>
+        <div class="seg" id="set-units" role="radiogroup" aria-label="Temperature unit">
+          <button type="button" data-v="c" role="radio">°C</button>
+          <button type="button" data-v="f" role="radio">°F</button>
+        </div>
+      </div>
+      <div class="field">
+        <div class="label">Theme</div>
+        <div class="seg" id="set-theme" role="radiogroup" aria-label="Theme">
+          <button type="button" data-v="system" role="radio">Auto</button>
+          <button type="button" data-v="light" role="radio">Light</button>
+          <button type="button" data-v="dark" role="radio">Dark</button>
+        </div>
+      </div>
+      <div class="field">
+        <div class="label">Notifications</div>
+        <button id="set-notify" class="btn ghost" type="button">🔔 Allow alerts in this browser</button>
+        <p class="small muted">Alerts fire while SafeAir is open (it refreshes every 30 minutes). Tip: install it to your home screen from your browser's menu.</p>
+      </div>
+      <div class="field">
+        <button id="set-reset" class="btn ghost danger" type="button">Reset everything</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
   <script src="risk.js"></script>
   <script src="app.js"></script>

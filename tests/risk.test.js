@@ -94,3 +94,65 @@ test("advice is personalised", () => {
   const calm = Risk.assess({ feelsLike: 22, usAqi: 20, uv: 1, isDay: true }, {});
   assert.match(Risk.advice(calm, {})[0], /look fine/);
 });
+
+test("activities add their exposure profile", () => {
+  assert.deepEqual(Risk.activityProfiles(["asthma"], "run"), ["asthma", "runner"]);
+  assert.deepEqual(Risk.activityProfiles([], "walk"), []);
+  const hot = { feelsLike: 30, usAqi: 20, uv: 1, isDay: true };
+  const walk = Risk.assess(hot, { profiles: Risk.activityProfiles([], "walk") }).overall;
+  const work = Risk.assess(hot, { profiles: Risk.activityProfiles([], "work") }).overall;
+  assert.ok(work > walk, "outdoor work in heat is riskier than a walk");
+});
+
+test("headline mentions the worst hazards and a better window", () => {
+  const hours = [];
+  for (let h = 0; h < 24; h++) {
+    const t = (13 + h) % 24;
+    hours.push({ time: "2026-07-01T" + String(t).padStart(2, "0") + ":00", feelsLike: t >= 11 && t <= 17 ? 42 : 24, usAqi: 30, uv: 1, isDay: true });
+  }
+  const r = Risk.assess({ feelsLike: 42, usAqi: 30, uv: 1, isDay: true });
+  const text = Risk.headline(r, Risk.timeline(hours, {}));
+  assert.match(text, /^Dangerous heat right now\. Better window: \d\d:00–\d\d:00\.$/);
+  const calm = Risk.assess({ feelsLike: 20, usAqi: 10, uv: 1, isDay: true });
+  assert.match(Risk.headline(calm, null), /Clear skies/);
+});
+
+test("ventilation window picks the cleanest, not-too-hot hour", () => {
+  const v = Risk.ventilationWindow([
+    { time: "2026-07-01T05:00", usAqi: 60, feelsLike: 25 },
+    { time: "2026-07-01T14:00", usAqi: 40, feelsLike: 38 },
+    { time: "2026-07-01T20:00", usAqi: 90, feelsLike: 28 }
+  ]);
+  assert.equal(v.time, "2026-07-01T05:00");
+  assert.equal(Risk.maskAdvice(160, false) !== null, true);
+  assert.equal(Risk.maskAdvice(120, false), null);
+  assert.notEqual(Risk.maskAdvice(120, true), null);
+});
+
+test("dailySummaries groups hours into days with worst values", () => {
+  const hours = [];
+  for (let d = 0; d < 2; d++) for (let h = 0; h < 24; h++) {
+    hours.push({ time: `2026-07-0${d + 1}T${String(h).padStart(2, "0")}:00`, feelsLike: d === 0 ? 30 + (h === 14 ? 12 : 0) : 22, usAqi: 40, uv: d === 0 && h === 13 ? 9 : 1, isDay: h >= 6 && h <= 19, weatherCode: 1, precip: 20 });
+  }
+  const days = Risk.dailySummaries(hours, {});
+  assert.equal(days.length, 2);
+  assert.equal(days[0].maxFeels, 42);
+  assert.equal(days[0].maxUv, 9);
+  assert.equal(days[0].level, 3);
+  assert.equal(days[1].level, 0);
+});
+
+test("diary insight needs enough data, then compares unwell vs good days", () => {
+  assert.equal(Risk.diaryInsight([]).ready, false);
+  const entries = [
+    { feeling: "bad", symptoms: ["Cough"], aqi: 180, feelsLike: 30 },
+    { feeling: "meh", symptoms: ["Cough", "Headache"], aqi: 160, feelsLike: 31 },
+    { feeling: "great", symptoms: [], aqi: 50, feelsLike: 29 },
+    { feeling: "good", symptoms: [], aqi: 70, feelsLike: 30 }
+  ];
+  const r = Risk.diaryInsight(entries);
+  assert.equal(r.ready, true);
+  assert.match(r.message, /AQI 170, compared with 60/);
+  assert.match(r.message, /most common symptom: cough/);
+  assert.equal(Risk.isUnwell({ feeling: "good", symptoms: ["Sneezing"] }), true);
+});

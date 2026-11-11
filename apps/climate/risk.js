@@ -208,7 +208,10 @@
   function timeline(hours, opts) {
     var points = hours.map(function (h) {
       var a = assess({ feelsLike: h.feelsLike, usAqi: h.usAqi, uv: h.uv, isDay: h.isDay, pollen: h.pollen }, opts);
-      return { time: h.time, level: a.overall, isDay: h.isDay, feelsLike: h.feelsLike, usAqi: h.usAqi, uv: h.uv };
+      return {
+        time: h.time, level: a.overall, isDay: h.isDay, feelsLike: h.feelsLike, usAqi: h.usAqi, uv: h.uv,
+        temp: h.temp, precip: h.precip, weatherCode: h.weatherCode, hazards: a.hazards
+      };
     });
     return { points: points, best: bestWindow(points) };
   }
@@ -301,6 +304,207 @@
     return tips;
   }
 
+  /* ---------- activities ---------- */
+
+  /* Each activity adds the exposure profile it implies (running = heavy breathing,
+   * kids = more sensitive, outdoor work = long heat exposure). */
+  var ACTIVITIES = {
+    walk:    { label: "Walk",          emoji: "🚶", adds: [] },
+    run:     { label: "Run / workout", emoji: "🏃", adds: ["runner"] },
+    cycle:   { label: "Cycle",         emoji: "🚴", adds: ["runner"] },
+    kids:    { label: "Kids' play",    emoji: "🛝", adds: ["kids"] },
+    commute: { label: "Commute",       emoji: "🚌", adds: [] },
+    work:    { label: "Outdoor work",  emoji: "👷", adds: ["outdoor"] }
+  };
+
+  function activityProfiles(profiles, activity) {
+    var out = (profiles || []).slice();
+    var a = ACTIVITIES[activity];
+    if (a) a.adds.forEach(function (p) { if (out.indexOf(p) === -1) out.push(p); });
+    return out;
+  }
+
+  /* ---------- verdicts & headline ---------- */
+
+  var VERDICTS = [
+    { title: "Good to go",          emoji: "🌿", short: "Enjoy being outside." },
+    { title: "Mostly fine",         emoji: "🙂", short: "A little care goes a long way." },
+    { title: "Go with care",        emoji: "⚠️", short: "Keep outdoor time light." },
+    { title: "Limit time outside",  emoji: "🛑", short: "Stay in when you can." },
+    { title: "Stay indoors",        emoji: "🚨", short: "Conditions are dangerous." }
+  ];
+
+  var HAZARD_WORDS = {
+    heat: ["", "warm", "very hot", "dangerous heat", "extreme heat"],
+    cold: ["", "cold", "severe cold", "dangerous cold", "extreme cold"],
+    air: ["", "slightly polluted air", "poor air", "unhealthy air", "hazardous air"],
+    uv: ["", "moderate sun", "strong sun", "very strong sun", "extreme UV"],
+    pollen: ["", "some pollen", "high pollen", "very high pollen", "extreme pollen"],
+    quake: ["", "a nearby earthquake", "a notable earthquake", "a strong earthquake", "a major earthquake"]
+  };
+
+  function fmtHour(t) { return String(t).slice(11, 16); }
+
+  function windowText(best) {
+    if (!best) return "";
+    var endH = (parseInt(String(best.to).slice(11, 13), 10) + 1) % 24;
+    return fmtHour(best.from) + "–" + String(endH).padStart(2, "0") + ":00";
+  }
+
+  /* One friendly sentence summarising now + the best window. */
+  function headline(result, tl) {
+    var worst = result.hazards
+      .filter(function (h) { return h.level !== null && h.level >= 1; })
+      .sort(function (a, b) { return b.level - a.level; })
+      .slice(0, 2)
+      .map(function (h) { return HAZARD_WORDS[h.key][h.level]; });
+    var now;
+    if (!worst.length) now = "Clear skies for your health right now";
+    else now = capital(worst.join(" and ")) + " right now";
+    var best = tl && tl.best;
+    if (best && result.overall > best.level) {
+      return now + ". Better window: " + windowText(best) + ".";
+    }
+    if (best && result.overall === 0) return now + ". Good until about " + windowText(best).split("–")[1] + ".";
+    return now + ".";
+  }
+
+  function capital(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+  /* ---------- smart tips ---------- */
+
+  /* Best hour in the next 24 to air out the home: lowest AQI where it isn't too hot. */
+  function ventilationWindow(points) {
+    var best = null;
+    points.forEach(function (p) {
+      if (!isNum(p.usAqi)) return;
+      if (isNum(p.feelsLike) && p.feelsLike >= 32) return;
+      if (!best || p.usAqi < best.usAqi) best = p;
+    });
+    return best ? { time: best.time, usAqi: best.usAqi } : null;
+  }
+
+  function maskAdvice(usAqi, sensitive) {
+    if (!isNum(usAqi)) return null;
+    if (usAqi > 150 || (sensitive && usAqi > 100)) return "Wear an N95 / FFP2 mask outside";
+    return null;
+  }
+
+  /* ---------- multi-day outlook ---------- */
+
+  /* hours: [{time, feelsLike, usAqi, uv, isDay, weatherCode, precip}] spanning several days.
+   * Returns one summary per date using the worst daytime values. */
+  function dailySummaries(hours, opts) {
+    var byDate = {};
+    var order = [];
+    hours.forEach(function (h) {
+      var d = String(h.time).slice(0, 10);
+      if (!byDate[d]) { byDate[d] = []; order.push(d); }
+      byDate[d].push(h);
+    });
+    return order.map(function (d) {
+      var hs = byDate[d];
+      var day = hs.filter(function (h) { return h.isDay; });
+      if (!day.length) day = hs;
+      var maxOf = function (arr, k) {
+        var v = arr.map(function (h) { return h[k]; }).filter(isNum);
+        return v.length ? Math.max.apply(null, v) : null;
+      };
+      var minOf = function (arr, k) {
+        var v = arr.map(function (h) { return h[k]; }).filter(isNum);
+        return v.length ? Math.min.apply(null, v) : null;
+      };
+      var maxFeels = maxOf(hs, "feelsLike");
+      var minFeels = minOf(hs, "feelsLike");
+      var maxAqi = maxOf(hs, "usAqi");
+      var maxUv = maxOf(day, "uv");
+      // Judge heat on the max, cold on the min.
+      var hot = assess({ feelsLike: maxFeels, usAqi: maxAqi, uv: maxUv, isDay: true }, opts);
+      var coldR = assess({ feelsLike: minFeels, usAqi: null, uv: null, isDay: true }, opts);
+      var level = Math.max(hot.overall, coldR.overall);
+      var codes = day.map(function (h) { return h.weatherCode; }).filter(isNum);
+      var precip = maxOf(hs, "precip");
+      var tl = timeline(hs, opts);
+      return {
+        date: d,
+        level: level,
+        maxFeels: maxFeels,
+        minFeels: minFeels,
+        maxAqi: maxAqi,
+        maxUv: maxUv,
+        precip: precip,
+        weatherCode: codes.length ? mode(codes) : null,
+        best: tl.best
+      };
+    });
+  }
+
+  function mode(arr) {
+    var counts = {}, best = arr[0], n = 0;
+    arr.forEach(function (v) { counts[v] = (counts[v] || 0) + 1; if (counts[v] > n) { n = counts[v]; best = v; } });
+    return best;
+  }
+
+  /* ---------- health diary ---------- */
+
+  var FEELINGS = [
+    { key: "great", emoji: "😄", label: "Great", unwell: false },
+    { key: "good",  emoji: "🙂", label: "Good",  unwell: false },
+    { key: "meh",   emoji: "😐", label: "Meh",   unwell: true },
+    { key: "bad",   emoji: "😷", label: "Unwell", unwell: true }
+  ];
+
+  var SYMPTOMS = ["Cough", "Wheezing", "Short of breath", "Headache", "Itchy eyes", "Sneezing", "Tired", "Dizzy"];
+
+  function isUnwell(e) {
+    var f = FEELINGS.filter(function (x) { return x.key === e.feeling; })[0];
+    return (f && f.unwell) || (e.symptoms && e.symptoms.length > 0);
+  }
+
+  function avg(arr) { return arr.length ? arr.reduce(function (a, b) { return a + b; }, 0) / arr.length : null; }
+
+  /* Compare conditions on days you felt unwell vs days you felt fine.
+   * Returns { ready, message, unwellAqi, wellAqi, unwellHeat, wellHeat, topSymptom }. */
+  function diaryInsight(entries) {
+    var unwell = entries.filter(isUnwell);
+    var well = entries.filter(function (e) { return !isUnwell(e); });
+    var need = 3;
+    if (entries.length < need || !unwell.length || !well.length) {
+      var left = Math.max(need - entries.length, 0);
+      return {
+        ready: false,
+        message: left > 0
+          ? "Log " + left + " more day" + (left === 1 ? "" : "s") + " to start spotting patterns."
+          : "Keep logging. Patterns appear once you have both good and not-so-good days."
+      };
+    }
+    var aqi = function (list) { return avg(list.map(function (e) { return e.aqi; }).filter(isNum)); };
+    var heat = function (list) { return avg(list.map(function (e) { return e.feelsLike; }).filter(isNum)); };
+    var r = {
+      ready: true,
+      unwellAqi: aqi(unwell), wellAqi: aqi(well),
+      unwellHeat: heat(unwell), wellHeat: heat(well)
+    };
+    var counts = {};
+    unwell.forEach(function (e) { (e.symptoms || []).forEach(function (s) { counts[s] = (counts[s] || 0) + 1; }); });
+    var top = Object.keys(counts).sort(function (a, b) { return counts[b] - counts[a]; })[0];
+    r.topSymptom = top || null;
+
+    var parts = [];
+    if (isNum(r.unwellAqi) && isNum(r.wellAqi) && r.unwellAqi - r.wellAqi >= 20) {
+      parts.push("On days you felt unwell, air quality averaged AQI " + Math.round(r.unwellAqi) +
+        ", compared with " + Math.round(r.wellAqi) + " on good days. Polluted air seems to affect you.");
+    }
+    if (isNum(r.unwellHeat) && isNum(r.wellHeat) && r.unwellHeat - r.wellHeat >= 3) {
+      parts.push("You tend to feel worse when it feels hotter (" + Math.round(r.unwellHeat) + "°C vs " +
+        Math.round(r.wellHeat) + "°C).");
+    }
+    if (!parts.length) parts.push("No clear link to air quality or heat yet. Keep logging to be sure.");
+    if (top) parts.push("Your most common symptom: " + top.toLowerCase() + ".");
+    r.message = parts.join(" ");
+    return r;
+  }
+
   var api = {
     LEVEL_NAMES: LEVEL_NAMES,
     PROFILES: PROFILES,
@@ -316,7 +520,19 @@
     safetyScore: safetyScore,
     timeline: timeline,
     bestWindow: bestWindow,
-    advice: advice
+    advice: advice,
+    ACTIVITIES: ACTIVITIES,
+    activityProfiles: activityProfiles,
+    VERDICTS: VERDICTS,
+    headline: headline,
+    windowText: windowText,
+    ventilationWindow: ventilationWindow,
+    maskAdvice: maskAdvice,
+    dailySummaries: dailySummaries,
+    FEELINGS: FEELINGS,
+    SYMPTOMS: SYMPTOMS,
+    isUnwell: isUnwell,
+    diaryInsight: diaryInsight
   };
 
   if (typeof module !== "undefined" && module.exports) module.exports = api;

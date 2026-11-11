@@ -6,7 +6,7 @@ Two small web apps built on free APIs from the
 
 | App | What it does | APIs used (no keys needed) |
 |---|---|---|
-| **[SafeAir Daily](apps/climate/)** | One personal safety score for heat, air quality, UV, pollen and earthquakes. Gives advice for your health profile (asthma, 65+, kids, outdoor workers…), a 24-hour risk timeline with the best time to go out, your own alert limits, and a family list to watch several people and cities. | Open-Meteo (weather, air quality, geocoding), USGS Earthquakes |
+| **[SafeAir Daily](apps/climate/)** | A personal daily safety check. **Today:** one 0–100 safety score and verdict for heat, air quality, UV, pollen and earthquakes, with tap-to-explain cards, smart tips (best time out, when to air your home, mask, water, sunscreen, umbrella) and advice for your health profile. **Plan:** pick an activity (walk, run, cycle, kids' play, commute, outdoor work) and scrub an interactive 24-hour chart to find the best time. **5 days:** outlook with the best time each day. **Diary:** log how you feel; it spots links between your symptoms and air or heat. **Family:** watch several people and cities. Light/dark theme, °C/°F, share card, installable on your phone. | Open-Meteo (weather, air quality, geocoding), USGS Earthquakes |
 | **[Job Radar](apps/jobs/)** | Pulls jobs from several boards and ranks them by how well they fit your résumé. Shows which skills you have and which you're missing for each job, plus the skills that would unlock the most jobs. Your résumé never leaves your browser. | Arbeitnow, Remote OK |
 
 Both are plain HTML/CSS/JavaScript with no build step and no server.
@@ -45,7 +45,7 @@ git subtree pull --prefix=public-apis https://github.com/public-apis/public-apis
 
 ## Limits of this first version
 
-- **SafeAir Daily** alerts work only while the page is open. Alerts while the phone is
+- **SafeAir Daily** keeps everything (people, diary) on your device only. Alerts work only while the page is open. Alerts while the phone is
   locked need a small backend with push notifications (next step). Pollen data covers
   Europe only. The app gives general guidance, not medical advice.
 - **Job Radar** matches on keywords against about 100 known skills, not AI, so it can miss
