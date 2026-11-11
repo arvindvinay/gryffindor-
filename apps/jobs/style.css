@@ -1,0 +1,97 @@
+.resume-tools { margin: 8px 0 16px; align-items: center; }
+
+.file-btn {
+  display: inline-block;
+  font-weight: 600;
+  font-size: 0.9rem;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  cursor: pointer;
+  margin: 0;
+}
+
+.skills-h { margin-top: 16px; }
+
+.chip.skill { cursor: default; }
+.chip.skill button {
+  padding: 0 4px;
+  background: none;
+  border: 0;
+  color: var(--muted);
+  font-size: 1rem;
+  line-height: 1;
+}
+.chip.skill button:hover { color: var(--lvl-3); }
+
+.add-skill { margin-top: 8px; }
+.actions { margin-top: 16px; align-items: center; }
+
+.gap-list { display: flex; flex-wrap: wrap; gap: 8px; }
+.gap {
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px dashed var(--lvl-2);
+  background: color-mix(in srgb, var(--lvl-2) 10%, var(--surface));
+  font-size: 0.9rem;
+}
+.gap b { font-weight: 700; }
+
+.filters { margin-bottom: 8px; }
+.filters select { min-width: 120px; }
+
+.job {
+  display: grid;
+  grid-template-columns: 64px 1fr;
+  gap: 12px;
+  padding: 14px 0;
+  border-top: 1px solid var(--border);
+}
+.job:first-child { border-top: 0; }
+
+.fit {
+  --c: var(--lvl-na);
+  width: 56px; height: 56px;
+  border-radius: 50%;
+  border: 5px solid var(--c);
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+  font-size: 0.95rem;
+}
+.fit.hi { --c: var(--lvl-0); }
+.fit.mid { --c: var(--lvl-1); }
+.fit.lo { --c: var(--lvl-2); }
+
+.job h3 { margin: 0; font-size: 1.05rem; }
+.job h3 a { color: var(--text); text-decoration: none; }
+.job h3 a:hover { text-decoration: underline; }
+.job .meta { color: var(--muted); font-size: 0.85rem; margin: 2px 0 8px; }
+.job .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 6px; }
+.tag {
+  font-size: 0.8rem;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+}
+.tag.have { border-color: var(--lvl-0); color: var(--lvl-0); }
+.tag.need { border-color: var(--lvl-2); color: var(--lvl-2); border-style: dashed; }
+.job .job-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
+.job .job-actions a, .job .job-actions button {
+  font-size: 0.85rem;
+  padding: 6px 12px;
+}
+.job .job-actions a {
+  display: inline-block;
+  border-radius: 8px;
+  background: var(--accent);
+  color: var(--accent-text);
+  text-decoration: none;
+  font-weight: 600;
+}
+.job details { font-size: 0.9rem; }
+.job details summary { cursor: pointer; color: var(--muted); }
+.job details p { white-space: pre-line; max-height: 300px; overflow: auto; margin: 8px 0 0; }
+
+#more { margin-top: 12px; width: 100%; }

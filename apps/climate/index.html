@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SafeAir Daily</title>
+  <meta name="description" content="Personal heat, air quality, UV, pollen and earthquake safety check for today.">
+  <link rel="stylesheet" href="../../assets/base.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="wrap">
+    <header class="top">
+      <div>
+        <h1>SafeAir Daily</h1>
+        <p>Is it safe for <em>you</em> to go out today?</p>
+      </div>
+      <a class="home" href="../../index.html">← All apps</a>
+    </header>
+
+    <section class="card" aria-labelledby="setup-h">
+      <h2 id="setup-h">Who and where</h2>
+      <div class="row">
+        <div class="grow">
+          <label for="person">Name (optional)</label>
+          <input id="person" type="text" placeholder="e.g. Me, Mum, Dad" autocomplete="off">
+        </div>
+        <div class="grow city-box">
+          <label for="city">City</label>
+          <input id="city" type="search" placeholder="Search a city…" autocomplete="off">
+          <ul id="city-results" class="suggestions" role="listbox" hidden></ul>
+        </div>
+        <button id="locate" class="secondary" type="button">📍 Use my location</button>
+      </div>
+
+      <fieldset class="profiles">
+        <legend>Health profile (pick any that apply)</legend>
+        <div id="profile-chips" class="chips"></div>
+      </fieldset>
+
+      <details class="limits">
+        <summary>My alert limits</summary>
+        <div class="row">
+          <div class="grow">
+            <label for="limit-aqi">Alert me when air quality (US AQI) is above</label>
+            <input id="limit-aqi" type="number" min="0" max="500" step="5" placeholder="e.g. 100">
+          </div>
+          <div class="grow">
+            <label for="limit-heat">Alert me when it feels hotter than (°C)</label>
+            <input id="limit-heat" type="number" min="-40" max="60" step="1" placeholder="e.g. 38">
+          </div>
+        </div>
+        <p class="small muted">Alerts show on this page, and as browser notifications if you allow them, while the page is open. It refreshes every 30 minutes.</p>
+        <button id="notify" class="secondary" type="button">🔔 Enable browser notifications</button>
+      </details>
+
+      <div class="row actions">
+        <button id="check" type="button" disabled>Check now</button>
+        <button id="save" class="secondary" type="button" disabled>＋ Save to family list</button>
+      </div>
+      <p id="status" class="small muted" role="status" aria-live="polite"></p>
+    </section>
+
+    <section id="report" class="card" hidden aria-live="polite"></section>
+
+    <section class="card" aria-labelledby="family-h">
+      <div class="family-head">
+        <h2 id="family-h">Family &amp; places</h2>
+        <button id="refresh-family" class="secondary small-btn" type="button">↻ Refresh all</button>
+      </div>
+      <p id="family-empty" class="muted small">Save people and cities (for example, parents in another city) to check them all at once.</p>
+      <div id="family" class="grid"></div>
+    </section>
+
+    <footer class="attrib">
+      Weather and air quality by <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a> (CC BY 4.0) ·
+      Earthquakes by <a href="https://earthquake.usgs.gov/" target="_blank" rel="noopener">USGS</a>.
+      This app gives general guidance only and is not medical advice. Always follow official warnings.
+    </footer>
+  </div>
+
+  <script src="risk.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

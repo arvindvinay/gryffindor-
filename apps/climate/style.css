@@ -1,0 +1,158 @@
+.city-box { position: relative; }
+
+.suggestions {
+  position: absolute;
+  z-index: 10;
+  left: 0; right: 0;
+  top: 100%;
+  margin: 4px 0 0;
+  padding: 4px;
+  list-style: none;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  max-height: 260px;
+  overflow: auto;
+}
+.suggestions li {
+  padding: 8px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.suggestions li:hover, .suggestions li[aria-selected="true"] { background: var(--surface-2); }
+
+fieldset.profiles {
+  border: 0;
+  padding: 0;
+  margin: 16px 0 8px;
+}
+fieldset.profiles legend { font-weight: 600; font-size: 0.9rem; margin-bottom: 8px; padding: 0; }
+
+.chip:has(input:checked) {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 14%, var(--surface));
+}
+
+details.limits { margin: 12px 0; }
+details.limits summary { cursor: pointer; font-weight: 600; margin-bottom: 8px; }
+details.limits .row { margin-bottom: 8px; }
+
+.actions { margin-top: 12px; }
+
+/* Report */
+.report-head {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.score {
+  --c: var(--lvl-0);
+  flex: 0 0 auto;
+  width: 96px; height: 96px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  border: 8px solid var(--c);
+  font-size: 1.8rem;
+  font-weight: 800;
+}
+.score small { display: block; font-size: 0.7rem; font-weight: 600; color: var(--muted); text-align: center; margin-top: -6px; }
+.report-title h2 { margin: 0; }
+.report-title p { margin: 2px 0 0; }
+
+.badge {
+  --c: var(--lvl-0);
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #fff;
+  background: var(--c);
+}
+
+
+.hazards { margin: 16px 0; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+.hazard {
+  --c: var(--lvl-na);
+  border: 1px solid var(--border);
+  border-left: 6px solid var(--c);
+  border-radius: 10px;
+  padding: 10px 12px;
+  background: var(--surface-2);
+}
+.hazard .name { font-size: 0.85rem; color: var(--muted); }
+.hazard .val { font-size: 1.25rem; font-weight: 700; }
+.hazard .lvl { font-size: 0.85rem; font-weight: 600; }
+
+.alerts {
+  border: 1px solid var(--lvl-3);
+  background: color-mix(in srgb, var(--lvl-3) 10%, var(--surface));
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-bottom: 12px;
+}
+.alerts p { margin: 0; font-weight: 600; }
+
+ul.advice { padding-left: 20px; margin: 8px 0 16px; }
+ul.advice li { margin-bottom: 6px; }
+
+.timeline {
+  display: grid;
+  grid-template-columns: repeat(24, 1fr);
+  gap: 2px;
+  margin-top: 8px;
+}
+.timeline .h {
+  height: 34px;
+  border-radius: 4px;
+  background: var(--c, var(--lvl-na));
+  position: relative;
+}
+.timeline .h.night { opacity: 0.55; }
+.timeline .h.best { outline: 2px solid var(--text); outline-offset: 1px; }
+.timeline-labels {
+  display: grid;
+  grid-template-columns: repeat(24, 1fr);
+  font-size: 0.7rem;
+  color: var(--muted);
+  margin-top: 4px;
+}
+.timeline-labels span { text-align: left; white-space: nowrap; overflow: visible; }
+
+.legend { display: flex; gap: 12px; flex-wrap: wrap; font-size: 0.8rem; color: var(--muted); margin-top: 8px; }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; background: var(--c, var(--lvl-na)); margin-right: 4px; vertical-align: middle; }
+
+.best-window { margin: 12px 0 0; font-weight: 600; }
+
+/* Family */
+.family-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 8px; }
+.family-head h2 { margin: 0; }
+.small-btn { padding: 6px 10px; font-size: 0.85rem; }
+
+.fam {
+  --c: var(--lvl-na);
+  border: 1px solid var(--border);
+  border-top: 6px solid var(--c);
+  border-radius: 10px;
+  padding: 12px;
+  background: var(--surface-2);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.fam .who { font-weight: 700; }
+.fam .where { font-size: 0.85rem; color: var(--muted); }
+.fam .sum { font-size: 0.9rem; }
+.fam .btns { display: flex; gap: 6px; margin-top: 6px; }
+.fam .btns button { padding: 6px 10px; font-size: 0.85rem; }
+
+/* Level colours last, so they override the neutral --c default set on each component above. */
+.lvl-0 { --c: var(--lvl-0); }
+.lvl-1 { --c: var(--lvl-1); }
+.lvl-2 { --c: var(--lvl-2); }
+.lvl-3 { --c: var(--lvl-3); }
+.lvl-4 { --c: var(--lvl-4); }
+.lvl-na { --c: var(--lvl-na); }

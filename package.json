@@ -1,0 +1,9 @@
+{
+  "name": "gryffindor-apps",
+  "private": true,
+  "description": "SafeAir Daily and Job Radar: static web apps built on free public APIs.",
+  "scripts": {
+    "test": "node --test tests/*.test.js",
+    "start": "python3 -m http.server 8000"
+  }
+}

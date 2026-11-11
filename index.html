@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Gryffindor Apps</title>
+  <meta name="description" content="Small, useful apps built on free public APIs.">
+  <link rel="stylesheet" href="assets/base.css">
+  <style>
+    .apps { display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+    .app { text-decoration: none; color: inherit; display: block; }
+    .app:hover .card { border-color: var(--accent); }
+    .app .icon { font-size: 2rem; }
+    .app h2 { margin: 8px 0 4px; }
+    .app p { margin: 0; color: var(--muted); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="top">
+      <div>
+        <h1>Gryffindor Apps</h1>
+        <p>Useful apps built on free APIs from the <a href="public-apis/README.md">public-apis</a> list.</p>
+      </div>
+    </header>
+    <div class="apps">
+      <a class="app" href="apps/climate/index.html">
+        <div class="card">
+          <div class="icon" aria-hidden="true">🌡️</div>
+          <h2>SafeAir Daily</h2>
+          <p>Heat, air quality, UV, pollen and earthquakes in one personal safety score, with advice for your health profile and the best time to go outside.</p>
+        </div>
+      </a>
+      <a class="app" href="apps/jobs/index.html">
+        <div class="card">
+          <div class="icon" aria-hidden="true">💼</div>
+          <h2>Job Radar</h2>
+          <p>Remote and tech jobs from several boards, ranked by how well they fit your résumé, with the skills that would unlock more jobs.</p>
+        </div>
+      </a>
+    </div>
+  </div>
+</body>
+</html>

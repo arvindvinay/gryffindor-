@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Job Radar</title>
+  <meta name="description" content="Remote and tech jobs from several boards, ranked by how well they fit your résumé.">
+  <link rel="stylesheet" href="../../assets/base.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="wrap">
+    <header class="top">
+      <div>
+        <h1>Job Radar</h1>
+        <p>Jobs from several boards, ranked by how well they fit <em>you</em>.</p>
+      </div>
+      <a class="home" href="../../index.html">← All apps</a>
+    </header>
+
+    <section class="card" aria-labelledby="me-h">
+      <h2 id="me-h">About you</h2>
+      <label for="resume">Paste your résumé or a list of your skills</label>
+      <textarea id="resume" placeholder="e.g. Frontend developer, 3 years. React, TypeScript, Next.js, Tailwind, Jest, Git, REST APIs, Figma…"></textarea>
+      <div class="row resume-tools">
+        <label class="file-btn secondary" for="resume-file">📄 Load a .txt / .md file</label>
+        <input id="resume-file" class="sr-only" type="file" accept=".txt,.md,text/plain,text/markdown">
+        <span class="small muted">🔒 Your résumé stays in this browser. It is never uploaded.</span>
+      </div>
+
+      <div class="row">
+        <div class="grow">
+          <label for="roles">Roles you want (comma-separated)</label>
+          <input id="roles" type="text" placeholder="e.g. frontend, react developer, product designer" autocomplete="off">
+        </div>
+      </div>
+
+      <h3 class="skills-h">Your skills <span class="small muted">(found in your résumé; click × to remove)</span></h3>
+      <div id="my-skills" class="chips"></div>
+      <div class="row add-skill">
+        <div class="grow">
+          <label for="skill-add" class="sr-only">Add a skill</label>
+          <input id="skill-add" type="text" list="skill-list" placeholder="Add a skill the scan missed…" autocomplete="off">
+          <datalist id="skill-list"></datalist>
+        </div>
+        <button id="skill-add-btn" class="secondary" type="button">Add</button>
+      </div>
+
+      <div class="row actions">
+        <button id="find" type="button">Find my matches</button>
+        <span id="status" class="small muted" role="status" aria-live="polite"></span>
+      </div>
+    </section>
+
+    <section id="gaps" class="card" hidden aria-labelledby="gaps-h">
+      <h2 id="gaps-h">Skills that would unlock more jobs</h2>
+      <p class="small muted">The skills you don't have yet that come up most often in your best matches.</p>
+      <div id="gap-list" class="gap-list"></div>
+    </section>
+
+    <section id="results-card" class="card" hidden>
+      <div class="filters row">
+        <div class="grow">
+          <label for="q">Filter results</label>
+          <input id="q" type="search" placeholder="Title, company or skill…" autocomplete="off">
+        </div>
+        <div>
+          <label for="min-score">Minimum fit</label>
+          <select id="min-score">
+            <option value="0">Any</option>
+            <option value="40">40%+</option>
+            <option value="60" selected>60%+</option>
+            <option value="75">75%+</option>
+          </select>
+        </div>
+        <label class="chip"><input id="remote-only" type="checkbox" checked> Remote only</label>
+        <label class="chip"><input id="saved-only" type="checkbox"> ★ Saved</label>
+      </div>
+      <p id="count" class="small muted"></p>
+      <div id="results"></div>
+      <button id="more" class="secondary" type="button" hidden>Show more</button>
+    </section>
+
+    <footer class="attrib">
+      Jobs from <a href="https://www.arbeitnow.com/" target="_blank" rel="noopener">Arbeitnow</a> and
+      <a href="https://remoteok.com/" target="_blank" rel="noopener">Remote OK</a>.
+      Fit scores are a keyword-based guide, not a guarantee. Always read the full job post.
+    </footer>
+  </div>
+
+  <script src="fit.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
