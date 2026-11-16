@@ -2,6 +2,10 @@
 (function () {
   "use strict";
 
+  var SVG = '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true">';
+  var ICON_SUN = SVG + '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>';
+  var ICON_MOON = SVG + '<path d="M20.5 14.5A8.5 8.5 0 1 1 9.5 3.5a7 7 0 0 0 11 11z"/></svg>';
+
   var STORE_KEY = "safeair.v2";
   var OLD_KEY = "safeair.v1";
   var REFRESH_MS = 30 * 60 * 1000;
@@ -230,7 +234,7 @@
     if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
     else document.documentElement.removeAttribute("data-theme");
     var dark = t === "dark" || (t === "system" && window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches);
-    $("theme-btn").textContent = dark ? "☀️" : "🌙";
+    $("theme-btn").innerHTML = dark ? ICON_SUN : ICON_MOON;
     $("theme-btn").setAttribute("aria-label", dark ? "Switch to light theme" : "Switch to dark theme");
   }
 

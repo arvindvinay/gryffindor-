@@ -1,8 +1,8 @@
 /* SafeAir Daily service worker: makes the app installable and opens instantly/offline.
  * App files: network first, falling back to cache. API data is not cached here;
  * the app keeps its own last-known data in localStorage. */
-var CACHE = "safeair-v2";
-var SHELL = ["./", "./index.html", "./style.css", "./risk.js", "./app.js", "./icon.svg", "./manifest.webmanifest"];
+var CACHE = "safeair-v3";
+var SHELL = ["./", "./index.html", "./style.css", "./risk.js", "./app.js", "./motion-fx.js", "../../assets/vendor/motion/motion-14.14.0.min.js", "./icon.svg", "./manifest.webmanifest"];
 
 self.addEventListener("install", function (e) {
   e.waitUntil(caches.open(CACHE).then(function (c) { return c.addAll(SHELL); }).then(function () { return self.skipWaiting(); }));
